@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1c423d">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <title>LinkFlow · CRM линкбилдинга</title>
+  <style>
+    :root { --ink:#172623; --muted:#667572; --line:#dce5df; --paper:#f7f8f4; --card:#fff; --forest:#1c423d; --mint:#cae6d5; --coral:#e8775c; --sand:#efe7d1; --shadow:0 12px 30px rgba(28,66,61,.08); }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:15px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, select { font:inherit; }
+    button { cursor:pointer; }
+    .app { max-width:1320px; margin:auto; padding:30px 24px 70px; }
+    [hidden] { display:none !important; }
+    .auth-shell { min-height:100vh; display:grid; place-items:center; padding:24px; background:linear-gradient(135deg, #eff4ef, #ddeee5); }
+    .auth-card { width:min(100%, 430px); padding:32px; border:1px solid #d5e1da; border-radius:20px; background:#fff; box-shadow:0 18px 44px rgba(28,66,61,.14); }
+    .auth-card .brand { margin-bottom:28px; }
+    .auth-card h1 { margin:0; font-size:25px; letter-spacing:-.04em; }
+    .auth-card p { margin:8px 0 22px; color:var(--muted); }
+    .auth-message { min-height:21px; margin:12px 0 0; color:#a04431; font-size:13px; font-weight:650; }
+    .auth-switch { width:100%; margin-top:10px; border:0; padding:8px; color:var(--forest); background:transparent; font-weight:750; }
+    .auth-user { max-width:180px; overflow:hidden; color:var(--muted); text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+    .sync-state { color:var(--muted); font-size:12px; font-weight:650; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:30px; }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:-.04em; font-size:24px; }
+    .mark { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; color:white; background:var(--forest); font-size:19px; }
+    .subtitle { margin:3px 0 0; color:var(--muted); font-size:13px; letter-spacing:0; font-weight:500; }
+    .header-actions { display:flex; gap:10px; }
+    .button { border:0; border-radius:10px; padding:10px 14px; font-weight:700; transition:.18s transform,.18s background; }
+    .button:hover { transform:translateY(-1px); }
+    .button.primary { color:#fff; background:var(--forest); }
+    .button.secondary { background:#e6eee8; color:var(--forest); }
+    .button.danger { background:#fff0ed; color:#b84d35; }
+    .overview { display:grid; grid-template-columns:1.5fr repeat(3,1fr); gap:16px; margin-bottom:26px; }
+    .hero, .metric, .panel { background:var(--card); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); }
+    .hero { min-height:160px; padding:24px; background:var(--forest); color:white; position:relative; overflow:hidden; }
+    .hero:after { content:""; position:absolute; width:210px; height:210px; border-radius:50%; background:#3a786c; right:-74px; bottom:-112px; }
+    .hero h1 { position:relative; z-index:1; margin:0; font-size:28px; line-height:1.1; letter-spacing:-.04em; max-width:420px; }
+    .hero p { position:relative; z-index:1; max-width:460px; margin:13px 0 0; color:#d5e5dc; }
+    .metric { padding:20px; }
+    .metric span { display:block; color:var(--muted); font-size:13px; font-weight:650; }
+    .metric strong { display:block; margin-top:9px; font-size:34px; letter-spacing:-.06em; }
+    .metric small { color:var(--muted); }
+    .layout { display:grid; grid-template-columns:360px minmax(0,1fr); gap:22px; }
+    .panel { padding:20px; }
+    .panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    h2 { margin:0; font-size:17px; letter-spacing:-.025em; }
+    .count { display:inline-grid; place-items:center; min-width:25px; height:25px; padding:0 7px; border-radius:20px; color:var(--forest); background:var(--mint); font-size:12px; font-weight:800; }
+    .project-list, .user-list { display:grid; gap:8px; }
+    .project { width:100%; padding:13px; display:flex; align-items:center; gap:11px; border:1px solid transparent; border-radius:12px; color:var(--ink); background:transparent; text-align:left; }
+    .project:hover { background:#f2f6f3; }
+    .project.active { border-color:#bbd8ca; color:var(--forest); background:#eaf5ee; }
+    .project-dot { flex:0 0 auto; width:10px; height:10px; border-radius:50%; background:var(--project-color, var(--coral)); }
+    .project-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:750; }
+    .project-sub { display:block; margin-top:2px; color:var(--muted); font-size:12px; font-weight:500; }
+    .empty-side { padding:20px 4px; color:var(--muted); font-size:14px; }
+    .side-section { margin-top:20px; padding-top:19px; border-top:1px solid var(--line); }
+    .user { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 4px; }
+    .user-info { display:flex; align-items:center; min-width:0; gap:9px; }
+    .avatar { flex:0 0 auto; display:grid; place-items:center; width:31px; height:31px; border-radius:50%; color:#fff; background:var(--user-color, #497d71); font-size:11px; font-weight:800; }
+    .user-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; font-weight:750; }
+    .user-role { display:block; color:var(--muted); font-size:11px; font-weight:500; }
+    .user-delete { width:26px; height:26px; border:0; border-radius:7px; color:#94a09b; background:transparent; }
+    .user-delete:hover { color:#b84d35; background:#fff0ed; }
+    .main-panel { min-width:0; }
+    .project-top { display:flex; justify-content:space-between; gap:16px; padding-bottom:20px; border-bottom:1px solid var(--line); }
+    .project-top h2 { font-size:24px; }
+    .project-top p { margin:5px 0 0; color:var(--muted); }
+    .project-actions { display:flex; align-items:flex-start; gap:8px; }
+    .task-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0; }
+    .filter { width:220px; max-width:46%; border:1px solid var(--line); border-radius:10px; padding:9px 11px; outline-color:var(--forest); }
+    .tasks { display:grid; gap:10px; }
+    .task { display:grid; grid-template-columns:34px minmax(0,1fr) 104px 152px 142px 35px; gap:14px; align-items:center; padding:14px; border:1px solid var(--line); border-radius:13px; }
+    .task.done { background:#f7fbf8; }
+    .check { width:21px; height:21px; accent-color:var(--forest); }
+    .task-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:750; }
+    .task-url { overflow:hidden; margin-top:3px; color:var(--muted); font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+    .task-url a { color:inherit; }
+    .task-owner { display:flex; align-items:center; gap:7px; min-width:0; color:var(--muted); font-size:12px; font-weight:700; }
+    .task-owner .avatar { width:25px; height:25px; font-size:9px; }
+    .progress-label { display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; color:var(--muted); font-size:12px; font-weight:650; }
+    .progress-bar { height:7px; overflow:hidden; border-radius:8px; background:#e7eeea; }
+    .progress-fill { height:100%; border-radius:8px; background:var(--forest); }
+    .number-control { display:flex; align-items:center; justify-content:space-between; gap:4px; background:#f0f5f1; border-radius:10px; padding:4px; }
+    .number-control button { width:27px; height:27px; border:0; border-radius:7px; color:var(--forest); background:#fff; font-size:18px; line-height:1; }
+    .number-control output { min-width:34px; text-align:center; font-weight:800; }
+    .icon { width:32px; height:32px; border:0; border-radius:8px; color:#86918d; background:transparent; font-size:20px; }
+    .icon:hover { color:#b84d35; background:#fff0ed; }
+    .empty { padding:48px 16px; color:var(--muted); text-align:center; }
+    dialog { width:min(520px, calc(100% - 28px)); border:0; border-radius:18px; padding:0; box-shadow:0 24px 60px rgba(18,36,31,.28); }
+    dialog::backdrop { background:rgba(20,37,33,.48); backdrop-filter:blur(2px); }
+    .dialog-body { padding:24px; }
+    .dialog-body h2 { font-size:22px; }
+    .dialog-body p { color:var(--muted); margin:7px 0 20px; }
+    form { display:grid; gap:14px; }
+    label { display:grid; gap:6px; color:#42524e; font-size:13px; font-weight:750; }
+    input, select { width:100%; border:1px solid #cfdcd4; border-radius:9px; padding:10px 11px; color:var(--ink); background:white; outline-color:var(--forest); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .dialog-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:8px; }
+    .notice { position:fixed; z-index:3; right:22px; bottom:22px; max-width:360px; padding:12px 15px; border-radius:10px; color:white; background:#243c37; box-shadow:var(--shadow); transform:translateY(90px); opacity:0; transition:.25s; }
+    .notice.show { transform:translateY(0); opacity:1; }
+    @media (max-width:950px) { .overview { grid-template-columns:repeat(3,1fr); }.hero { grid-column:1/-1; }.layout { grid-template-columns:1fr; }.projects-panel { padding-bottom:12px; }.project-list { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); } }
+    @media (max-width:640px) { .app { padding:20px 14px 50px; } header { align-items:flex-start; }.header-actions .secondary { display:none; }.overview { grid-template-columns:1fr 1fr; }.hero { min-height:145px; }.hero h1 { font-size:24px; }.metric { padding:15px; }.metric strong { font-size:27px; }.task { grid-template-columns:26px minmax(0,1fr) 31px; gap:9px; }.task-owner, .task-progress, .number-control { grid-column:2; }.number-control { width:142px; }.task .icon { grid-column:3; grid-row:1; }.project-top { display:block; }.project-actions { margin-top:15px; }.filter { width:150px; }.form-row { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <section class="auth-shell" id="authScreen">
+    <div class="auth-card">
+      <div class="brand"><span class="mark">↗</span><div>LinkFlow<div class="subtitle">CRM линкбилдинга</div></div></div>
+      <h1 id="authTitle">Вход в систему</h1><p id="authDescription">Введите данные своей учётной записи.</p>
+      <form id="authForm"><label>Электронная почта<input type="email" name="email" autocomplete="email" required placeholder="name@company.com"></label><label>Пароль<input type="password" name="password" autocomplete="current-password" minlength="8" required placeholder="Минимум 8 символов"></label><label id="passwordConfirmField" hidden>Повторите пароль<input type="password" name="passwordConfirm" autocomplete="new-password" minlength="8" placeholder="Повторите пароль"></label><button class="button primary" id="authSubmit">Войти</button></form>
+      <div class="auth-message" id="authMessage" role="status"></div><button class="auth-switch" id="authModeButton" type="button">Создать учётную запись</button>
+    </div>
+  </section>
+  <main class="app" id="appRoot" hidden>
+    <header>
+      <div class="brand"><span class="mark">↗</span><div>LinkFlow<div class="subtitle">Учёт задач линкбилдера</div></div></div>
+      <div class="header-actions"><span class="sync-state" id="syncState"></span><span class="auth-user" id="authUser"></span><button class="button secondary" id="logoutButton">Выйти</button><button class="button secondary" id="importButton">Импорт</button><button class="button secondary" id="exportButton">Экспорт</button><button class="button primary" id="addProjectButton">+ Проект</button><input id="importFile" type="file" accept="application/json" hidden></div>
+    </header>
+    <section class="overview" aria-label="Сводка">
+      <div class="hero"><h1>Ссылки под контролем, проекты в одном месте.</h1><p>Создавайте задачи по URL и фиксируйте результат линкбилдера.</p></div>
+      <div class="metric"><span>Проекты</span><strong id="projectCount">0</strong><small>в работе</small></div>
+      <div class="metric"><span>Сделано ссылок</span><strong id="linksDone">0</strong><small>по всем задачам</small></div>
+      <div class="metric"><span>Выполнение</span><strong id="completionRate">0%</strong><small>от поставленных целей</small></div>
+    </section>
+    <section class="layout">
+      <aside class="panel projects-panel">
+        <div class="panel-head"><h2>Проекты</h2><span class="count" id="sideProjectCount">0</span></div>
+        <div class="project-list" id="projectList"></div>
+        <div class="side-section"><div class="panel-head"><h2>Пользователи</h2><button class="button secondary" id="addUserButton">+ Добавить</button></div><div class="user-list" id="userList"></div></div>
+      </aside>
+      <section class="panel main-panel" aria-live="polite">
+        <div id="workspace"></div>
+      </section>
+    </section>
+  </main>
+  <dialog id="projectDialog">
+    <div class="dialog-body"><h2>Новый проект</h2><p>Добавьте название, чтобы начать вести задачи.</p><form id="projectForm"><label>Название проекта<input name="name" maxlength="70" required placeholder="Например, Магазин электроники" autofocus></label><label>Цвет метки<input name="color" type="color" value="#e8775c"></label><div class="dialog-actions"><button class="button secondary" type="button" data-close>Отмена</button><button class="button primary">Создать проект</button></div></form></div>
+  </dialog>
+  <dialog id="taskDialog">
+    <div class="dialog-body"><h2>Задача на ссылки</h2><p>Укажите страницу, исполнителя и целевое количество ссылок.</p><form id="taskForm"><label>Название задачи<input name="title" maxlength="90" required placeholder="Главная страница"></label><label>URL страницы<input name="url" type="url" required placeholder="https://example.com/page"></label><label>Исполнитель<select name="userId" id="taskUserSelect" required></select></label><div class="form-row"><label>План ссылок<input name="target" type="number" min="1" max="100000" value="10" required></label><label>Уже сделано<input name="done" type="number" min="0" max="100000" value="0" required></label></div><div class="dialog-actions"><button class="button secondary" type="button" data-close>Отмена</button><button class="button primary">Добавить задачу</button></div></form></div>
+  </dialog>
+  <dialog id="userDialog">
+    <div class="dialog-body"><h2>Новый пользователь</h2><p>Добавьте исполнителя, которому можно назначать задачи.</p><form id="userForm"><label>Имя<input name="name" maxlength="60" required placeholder="Например, Алексей"></label><label>Роль<input name="role" maxlength="40" value="Линкбилдер" required></label><label>Цвет метки<input name="color" type="color" value="#497d71"></label><div class="dialog-actions"><button class="button secondary" type="button" data-close>Отмена</button><button class="button primary">Добавить пользователя</button></div></form></div>
+  </dialog>
+  <div class="notice" id="notice" role="status"></div>
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    let storageKey = 'linkflow-crm-v2';
+    const demoUser = { id: crypto.randomUUID(), name: 'Линкбилдер', role: 'Линкбилдер', color: '#497d71' };
+    const demo = { users: [demoUser], projects: [{ id: crypto.randomUUID(), name: 'Демо-проект', color: '#e8775c', tasks: [{ id: crypto.randomUUID(), title: 'Каталог услуг', url: 'https://example.com/services', target: 20, done: 7, userId: demoUser.id }] }], activeId: null };
+    let state = normalize(load());
+    let authClient = null, authMode = 'login', currentUser = null;
+    if (!state.projects.length) state.activeId = null;
+    if (!state.activeId && state.projects[0]) state.activeId = state.projects[0].id;
+    const $ = selector => document.querySelector(selector);
+    const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    function load() { try { const saved = JSON.parse(localStorage.getItem(storageKey)); return saved && Array.isArray(saved.projects) ? saved : structuredClone(demo); } catch { return structuredClone(demo); } }
+    function normalize(saved) { const value = saved && Array.isArray(saved.projects) ? saved : structuredClone(demo); if (!Array.isArray(value.users) || !value.users.length) value.users = [structuredClone(demoUser)]; value.projects.forEach(project => { project.tasks ||= []; project.tasks.forEach(task => { if (!task.userId) task.userId = value.users[0].id; }); }); return value; }
+    function save() { localStorage.setItem(storageKey, JSON.stringify(state)); render(); syncToCloud(); }
+    function setSyncState(text) { $('#syncState').textContent = text; }
+    async function syncToCloud() { if (!authClient || !currentUser) return; setSyncState('Сохранение…'); const { error } = await authClient.from('crm_states').upsert({ owner_id: currentUser.id, data: state, updated_at: new Date().toISOString() }); if (error) { setSyncState('Сохранение в облако недоступно'); return; } setSyncState('Сохранено в облаке'); }
+    function activeProject() { return state.projects.find(project => project.id === state.activeId); }
+    function total() { return state.projects.flatMap(p => p.tasks); }
+    function render() {
+      const tasks = total(), done = tasks.reduce((sum, task) => sum + task.done, 0), goal = tasks.reduce((sum, task) => sum + task.target, 0);
+      $('#projectCount').textContent = state.projects.length;
+      $('#sideProjectCount').textContent = state.projects.length;
+      $('#linksDone').textContent = done;
+      $('#completionRate').textContent = goal ? `${Math.round(done / goal * 100)}%` : '0%';
+      $('#projectList').innerHTML = state.projects.length ? state.projects.map(p => `<button class="project ${p.id === state.activeId ? 'active' : ''}" data-project-id="${p.id}" style="--project-color:${p.color}"><i class="project-dot"></i><span class="project-name">${escapeHtml(p.name)}<span class="project-sub">${p.tasks.length} ${plural(p.tasks.length, 'задача', 'задачи', 'задач')}</span></span></button>`).join('') : '<div class="empty-side">Добавьте первый проект.</div>';
+      $('#userList').innerHTML = state.users.map(user => `<div class="user"><div class="user-info"><span class="avatar" style="--user-color:${user.color}">${initials(user.name)}</span><span class="user-name">${escapeHtml(user.name)}<span class="user-role">${escapeHtml(user.role)}</span></span></div><button class="user-delete" title="Удалить пользователя" aria-label="Удалить пользователя" data-delete-user="${user.id}">×</button></div>`).join('');
+      renderWorkspace();
+    }
+    function renderWorkspace() {
+      const project = activeProject(), root = $('#workspace');
+      if (!project) { root.innerHTML = '<div class="empty"><h2>Создайте проект</h2><p>Внутри проекта можно вести URL и количество сделанных ссылок.</p><button class="button primary" onclick="openProjectDialog()">+ Новый проект</button></div>'; return; }
+      root.innerHTML = `<div class="project-top"><div><h2>${escapeHtml(project.name)}</h2><p>${project.tasks.length ? 'Задачи по страницам проекта' : 'Добавьте первую задачу для линкбилдера.'}</p></div><div class="project-actions"><button class="button primary" id="addTaskButton">+ Задача</button><button class="icon" title="Удалить проект" aria-label="Удалить проект" id="deleteProjectButton">×</button></div></div><div class="task-toolbar"><h2>Задачи <span class="count">${project.tasks.length}</span></h2><input class="filter" id="taskFilter" type="search" placeholder="Поиск по URL или названию"></div><div class="tasks" id="tasks">${taskRows(project.tasks)}</div>`;
+      $('#addTaskButton').onclick = openTaskDialog;
+      $('#deleteProjectButton').onclick = () => deleteProject(project.id);
+      $('#taskFilter').oninput = event => $('#tasks').innerHTML = taskRows(project.tasks.filter(task => `${task.title} ${task.url}`.toLowerCase().includes(event.target.value.toLowerCase())));
+    }
+    function taskRows(tasks) { return tasks.length ? tasks.map(task => { const percent = task.target ? Math.min(100, Math.round(task.done / task.target * 100)) : 0, user = state.users.find(person => person.id === task.userId) || state.users[0]; return `<article class="task ${task.done >= task.target ? 'done' : ''}"><input class="check" type="checkbox" aria-label="Завершить задачу" data-complete="${task.id}" ${task.done >= task.target ? 'checked' : ''}><div><div class="task-title">${escapeHtml(task.title)}</div><div class="task-url"><a href="${escapeHtml(task.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(task.url)}</a></div></div><div class="task-owner" title="${escapeHtml(user.name)}"><span class="avatar" style="--user-color:${user.color}">${initials(user.name)}</span><span>${escapeHtml(user.name)}</span></div><div class="task-progress"><div class="progress-label"><span>${task.done} из ${task.target}</span><span>${percent}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div></div><div class="number-control" aria-label="Количество сделанных ссылок"><button aria-label="Уменьшить" data-change="-1" data-task="${task.id}">−</button><output>${task.done}</output><button aria-label="Увеличить" data-change="1" data-task="${task.id}">+</button></div><button class="icon" title="Удалить задачу" aria-label="Удалить задачу" data-delete-task="${task.id}">×</button></article>`; }).join('') : '<div class="empty">Здесь пока нет задач. Добавьте URL проекта и план ссылок.</div>'; }
+    function plural(n, one, few, many) { const mod10 = n % 10, mod100 = n % 100; return mod10 === 1 && mod100 !== 11 ? one : mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20) ? few : many; }
+    function initials(name) { return escapeHtml(name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()); }
+    function openProjectDialog() { $('#projectForm').reset(); $('#projectDialog').showModal(); }
+    function openTaskDialog() { $('#taskForm').reset(); $('#taskUserSelect').innerHTML = state.users.map(user => `<option value="${user.id}">${escapeHtml(user.name)} · ${escapeHtml(user.role)}</option>`).join(''); $('#taskDialog').showModal(); }
+    function openUserDialog() { $('#userForm').reset(); $('#userDialog').showModal(); }
+    function deleteProject(id) { const project = state.projects.find(p => p.id === id); if (!confirm(`Удалить проект «${project.name}» и его задачи?`)) return; state.projects = state.projects.filter(p => p.id !== id); state.activeId = state.projects[0]?.id || null; save(); notice('Проект удалён'); }
+    function findTask(id) { return activeProject()?.tasks.find(task => task.id === id); }
+    document.addEventListener('click', event => {
+      const projectButton = event.target.closest('[data-project-id]'); if (projectButton) { state.activeId = projectButton.dataset.projectId; save(); return; }
+      const change = event.target.closest('[data-change]'); if (change) { const task = findTask(change.dataset.task); task.done = Math.max(0, task.done + Number(change.dataset.change)); save(); return; }
+      const complete = event.target.closest('[data-complete]'); if (complete) { const task = findTask(complete.dataset.complete); task.done = complete.checked ? task.target : 0; save(); return; }
+      const remove = event.target.closest('[data-delete-task]'); if (remove) { const project = activeProject(); const task = findTask(remove.dataset.deleteTask); if (confirm(`Удалить задачу «${task.title}»?`)) { project.tasks = project.tasks.filter(t => t.id !== task.id); save(); notice('Задача удалена'); } return; }
+      const userRemove = event.target.closest('[data-delete-user]'); if (userRemove) { if (state.users.length === 1) { notice('В CRM должен остаться хотя бы один пользователь'); return; } const user = state.users.find(person => person.id === userRemove.dataset.deleteUser); if (confirm(`Удалить пользователя «${user.name}»? Его задачи перейдут первому пользователю.`)) { state.projects.forEach(project => project.tasks.forEach(task => { if (task.userId === user.id) task.userId = state.users.find(person => person.id !== user.id).id; })); state.users = state.users.filter(person => person.id !== user.id); save(); notice('Пользователь удалён'); } return; }
+      if (event.target.closest('[data-close]')) event.target.closest('dialog').close();
+    });
+    $('#addProjectButton').onclick = openProjectDialog;
+    $('#addUserButton').onclick = openUserDialog;
+    $('#projectForm').onsubmit = event => { event.preventDefault(); const data = new FormData(event.target); const project = { id:crypto.randomUUID(), name:data.get('name').trim(), color:data.get('color'), tasks:[] }; state.projects.push(project); state.activeId = project.id; $('#projectDialog').close(); save(); notice('Проект создан'); };
+    $('#taskForm').onsubmit = event => { event.preventDefault(); const data = new FormData(event.target), project = activeProject(); project.tasks.unshift({ id:crypto.randomUUID(), title:data.get('title').trim(), url:data.get('url').trim(), target:Number(data.get('target')), done:Number(data.get('done')), userId:data.get('userId') }); $('#taskDialog').close(); save(); notice('Задача добавлена'); };
+    $('#userForm').onsubmit = event => { event.preventDefault(); const data = new FormData(event.target); state.users.push({ id:crypto.randomUUID(), name:data.get('name').trim(), role:data.get('role').trim(), color:data.get('color') }); $('#userDialog').close(); save(); notice('Пользователь добавлен'); };
+    $('#exportButton').onclick = () => { const file = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'}), link = document.createElement('a'); link.href = URL.createObjectURL(file); link.download = `linkflow-${new Date().toISOString().slice(0,10)}.json`; link.click(); URL.revokeObjectURL(link.href); notice('Данные выгружены в JSON-файл'); };
+    $('#importButton').onclick = () => $('#importFile').click();
+    $('#importFile').onchange = event => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const received = normalize(JSON.parse(reader.result)); if (!Array.isArray(received.projects)) throw new Error('format'); state = received; if (!state.projects.some(project => project.id === state.activeId)) state.activeId = state.projects[0]?.id || null; save(); notice('Данные восстановлены из файла'); } catch { notice('Файл не содержит данные LinkFlow'); } event.target.value = ''; }; reader.readAsText(file); };
+    let noticeTimer; function notice(text) { const el = $('#notice'); el.textContent = text; el.classList.add('show'); clearTimeout(noticeTimer); noticeTimer = setTimeout(() => el.classList.remove('show'), 2600); }
+    window.openProjectDialog = openProjectDialog;
+    function validConfig() { const config = window.LINKFLOW_SUPABASE || {}; return Boolean(window.supabase && config.url && config.publishableKey && !config.url.includes('YOUR_')); }
+    function setAuthMode(mode) { authMode = mode; const register = mode === 'register'; $('#authTitle').textContent = register ? 'Создание учётной записи' : 'Вход в систему'; $('#authDescription').textContent = register ? 'Укажите почту и придумайте пароль.' : 'Введите данные своей учётной записи.'; $('#authSubmit').textContent = register ? 'Зарегистрироваться' : 'Войти'; $('#authModeButton').textContent = register ? 'У меня уже есть учётная запись' : 'Создать учётную запись'; $('#passwordConfirmField').hidden = !register; $('#authForm').querySelector('[name="password"]').autocomplete = register ? 'new-password' : 'current-password'; $('#authMessage').textContent = ''; }
+    function showAuth(message = '') { $('#appRoot').hidden = true; $('#authScreen').hidden = false; $('#authMessage').textContent = message; }
+    async function showApp(user) { currentUser = user; storageKey = `linkflow-crm-v2-${user.id}`; state = normalize(load()); setSyncState('Загрузка данных…'); const { data, error } = await authClient.from('crm_states').select('data').eq('owner_id', user.id).maybeSingle(); if (error) { setSyncState('Облачная база ожидает настройки'); } else if (data?.data) { state = normalize(data.data); localStorage.setItem(storageKey, JSON.stringify(state)); setSyncState('Синхронизировано'); } else { await syncToCloud(); } $('#authUser').textContent = user.email; $('#authScreen').hidden = true; $('#appRoot').hidden = false; render(); }
+    async function bootAuth() { if (!validConfig()) { showAuth('Авторизация ожидает подключения Supabase.'); return; } const config = window.LINKFLOW_SUPABASE; authClient = window.supabase.createClient(config.url, config.publishableKey); const { data: { session } } = await authClient.auth.getSession(); if (session) await showApp(session.user); else showAuth(); authClient.auth.onAuthStateChange((_event, session) => { if (session) showApp(session.user); }); }
+    $('#authModeButton').onclick = () => setAuthMode(authMode === 'login' ? 'register' : 'login');
+    $('#authForm').onsubmit = async event => { event.preventDefault(); if (!authClient) { showAuth('Добавьте параметры Supabase в файл конфигурации.'); return; } const data = new FormData(event.target), email = data.get('email').trim(), password = data.get('password'); if (authMode === 'register') { if (password !== data.get('passwordConfirm')) { $('#authMessage').textContent = 'Пароли должны совпадать.'; return; } const { error } = await authClient.auth.signUp({ email, password, options: { emailRedirectTo: `${location.origin}${location.pathname}` } }); $('#authMessage').textContent = error ? error.message : 'Проверьте почту и подтвердите регистрацию.'; return; } const { error } = await authClient.auth.signInWithPassword({ email, password }); if (error) $('#authMessage').textContent = error.message; };
+    $('#logoutButton').onclick = async () => { if (authClient) await authClient.auth.signOut(); currentUser = null; setSyncState(''); showAuth(); };
+    bootAuth();
+  </script>
+</body>
+</html>
