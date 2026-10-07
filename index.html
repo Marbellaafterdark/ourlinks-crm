@@ -10,7 +10,7 @@
     :root { --ink:#172623; --muted:#667572; --line:#dce5df; --paper:#f7f8f4; --card:#fff; --forest:#1c423d; --mint:#cae6d5; --coral:#e8775c; --sand:#efe7d1; --shadow:0 12px 30px rgba(28,66,61,.08); }
     * { box-sizing:border-box; }
     body { margin:0; color:var(--ink); background:var(--paper); font:15px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    button, input, select { font:inherit; }
+    button, input, select, textarea { font:inherit; }
     button { cursor:pointer; }
     .app { max-width:1320px; margin:auto; padding:30px 24px 70px; }
     [hidden] { display:none !important; }
@@ -97,7 +97,9 @@
     .dialog-body p { color:var(--muted); margin:7px 0 20px; }
     form { display:grid; gap:14px; }
     label { display:grid; gap:6px; color:#42524e; font-size:13px; font-weight:750; }
-    input, select { width:100%; border:1px solid #cfdcd4; border-radius:9px; padding:10px 11px; color:var(--ink); background:white; outline-color:var(--forest); }
+    input, select, textarea { width:100%; border:1px solid #cfdcd4; border-radius:9px; padding:10px 11px; color:var(--ink); background:white; outline-color:var(--forest); }
+    textarea { min-height:150px; resize:vertical; }
+    .field-note { margin:-7px 0 0; color:var(--muted); font-size:12px; }
     .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     .dialog-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:8px; }
     .notice { position:fixed; z-index:3; right:22px; bottom:22px; max-width:360px; padding:12px 15px; border-radius:10px; color:white; background:#243c37; box-shadow:var(--shadow); transform:translateY(90px); opacity:0; transition:.25s; }
@@ -146,6 +148,9 @@
   <dialog id="taskDialog">
     <div class="dialog-body"><h2>Задача на ссылки</h2><p>Укажите страницу, исполнителя и целевое количество ссылок.</p><form id="taskForm"><label>Название задачи<input name="title" maxlength="90" required placeholder="Главная страница"></label><label>URL страницы<input name="url" type="text" inputmode="url" autocomplete="url" required placeholder="test.com или https://test.com/page"></label><label>Исполнитель<select name="userId" id="taskUserSelect" required></select></label><div class="form-row"><label>План ссылок<input name="target" type="number" min="1" max="100000" value="10" required></label><label>Уже сделано<input name="done" type="number" min="0" max="100000" value="0" required></label></div><div class="dialog-actions"><button class="button secondary" type="button" data-close>Отмена</button><button class="button primary">Добавить задачу</button></div></form></div>
   </dialog>
+  <dialog id="batchTaskDialog">
+    <div class="dialog-body"><h2>Добавить URL списком</h2><p>Каждая строка станет отдельной задачей. Можно вставлять адреса без `https://`.</p><form id="batchTaskForm"><label>URL страниц<textarea name="urls" required placeholder="test.com\ntest.com/catalog\nexample.org/page"></textarea></label><p class="field-note">Повторяющиеся адреса из списка и текущего проекта пропускаются.</p><label>Исполнитель<select name="userId" id="batchTaskUserSelect" required></select></label><label>План ссылок для каждого URL<input name="target" type="number" min="1" max="100000" value="10" required></label><div class="dialog-actions"><button class="button secondary" type="button" data-close>Отмена</button><button class="button primary">Добавить URL</button></div></form></div>
+  </dialog>
   <dialog id="userDialog">
     <div class="dialog-body"><h2>Новый пользователь</h2><p>Добавьте исполнителя, которому можно назначать задачи.</p><form id="userForm"><label>Имя<input name="name" maxlength="60" required placeholder="Например, Алексей"></label><label>Роль<input name="role" maxlength="40" value="Линкбилдер" required></label><label>Цвет метки<input name="color" type="color" value="#497d71"></label><div class="dialog-actions"><button class="button secondary" type="button" data-close>Отмена</button><button class="button primary">Добавить пользователя</button></div></form></div>
   </dialog>
@@ -185,8 +190,9 @@
     function renderWorkspace() {
       const project = activeProject(), root = $('#workspace');
       if (!project) { root.innerHTML = '<div class="empty"><h2>Создайте проект</h2><p>Внутри проекта можно вести URL и количество сделанных ссылок.</p><button class="button primary" onclick="openProjectDialog()">+ Новый проект</button></div>'; return; }
-      root.innerHTML = `<div class="project-top"><div><h2>${escapeHtml(project.name)}</h2><p>${project.tasks.length ? 'Задачи по страницам проекта' : 'Добавьте первую задачу для линкбилдера.'}</p></div><div class="project-actions"><button class="button primary" id="addTaskButton">+ Задача</button><button class="icon" title="Удалить проект" aria-label="Удалить проект" id="deleteProjectButton">×</button></div></div><div class="task-toolbar"><h2>Задачи <span class="count">${project.tasks.length}</span></h2><input class="filter" id="taskFilter" type="search" placeholder="Поиск по URL или названию"></div><div class="tasks" id="tasks">${taskRows(project.tasks)}</div>`;
+      root.innerHTML = `<div class="project-top"><div><h2>${escapeHtml(project.name)}</h2><p>${project.tasks.length ? 'Задачи по страницам проекта' : 'Добавьте первую задачу для линкбилдера.'}</p></div><div class="project-actions"><button class="button secondary" id="addBatchTaskButton">+ URL списком</button><button class="button primary" id="addTaskButton">+ Задача</button><button class="icon" title="Удалить проект" aria-label="Удалить проект" id="deleteProjectButton">×</button></div></div><div class="task-toolbar"><h2>Задачи <span class="count">${project.tasks.length}</span></h2><input class="filter" id="taskFilter" type="search" placeholder="Поиск по URL или названию"></div><div class="tasks" id="tasks">${taskRows(project.tasks)}</div>`;
       $('#addTaskButton').onclick = openTaskDialog;
+      $('#addBatchTaskButton').onclick = openBatchTaskDialog;
       $('#deleteProjectButton').onclick = () => deleteProject(project.id);
       $('#taskFilter').oninput = event => $('#tasks').innerHTML = taskRows(project.tasks.filter(task => `${task.title} ${task.url}`.toLowerCase().includes(event.target.value.toLowerCase())));
     }
@@ -194,8 +200,10 @@
     function plural(n, one, few, many) { const mod10 = n % 10, mod100 = n % 100; return mod10 === 1 && mod100 !== 11 ? one : mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20) ? few : many; }
     function initials(name) { return escapeHtml(name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()); }
     function normalizeUrl(value) { const url = value.trim(); return /^https?:\/\//i.test(url) ? url : `https://${url}`; }
+    function taskTitleFromUrl(url) { try { const parsed = new URL(url); return `${parsed.hostname}${parsed.pathname === '/' ? '' : parsed.pathname}`; } catch { return url; } }
     function openProjectDialog() { $('#projectForm').reset(); $('#projectDialog').showModal(); }
     function openTaskDialog() { $('#taskForm').reset(); $('#taskUserSelect').innerHTML = state.users.map(user => `<option value="${user.id}">${escapeHtml(user.name)} · ${escapeHtml(user.role)}</option>`).join(''); $('#taskDialog').showModal(); }
+    function openBatchTaskDialog() { $('#batchTaskForm').reset(); $('#batchTaskUserSelect').innerHTML = state.users.map(user => `<option value="${user.id}">${escapeHtml(user.name)} · ${escapeHtml(user.role)}</option>`).join(''); $('#batchTaskDialog').showModal(); }
     function openUserDialog() { $('#userForm').reset(); $('#userDialog').showModal(); }
     function deleteProject(id) { const project = state.projects.find(p => p.id === id); if (!confirm(`Удалить проект «${project.name}» и его задачи?`)) return; state.projects = state.projects.filter(p => p.id !== id); state.activeId = state.projects[0]?.id || null; save(); notice('Проект удалён'); }
     function findTask(id) { return activeProject()?.tasks.find(task => task.id === id); }
@@ -211,6 +219,7 @@
     $('#addUserButton').onclick = openUserDialog;
     $('#projectForm').onsubmit = event => { event.preventDefault(); const data = new FormData(event.target); const project = { id:crypto.randomUUID(), name:data.get('name').trim(), color:data.get('color'), tasks:[] }; state.projects.push(project); state.activeId = project.id; $('#projectDialog').close(); save(); notice('Проект создан'); };
     $('#taskForm').onsubmit = event => { event.preventDefault(); const data = new FormData(event.target), project = activeProject(); project.tasks.unshift({ id:crypto.randomUUID(), title:data.get('title').trim(), url:normalizeUrl(data.get('url')), target:Number(data.get('target')), done:Number(data.get('done')), userId:data.get('userId') }); $('#taskDialog').close(); save(); notice('Задача добавлена'); };
+    $('#batchTaskForm').onsubmit = event => { event.preventDefault(); const data = new FormData(event.target), project = activeProject(), seen = new Set(project.tasks.map(task => task.url.toLowerCase())); const urls = [...new Set(data.get('urls').split(/[\n,]+/).map(normalizeUrl).filter(url => url !== 'https://'))].filter(url => !seen.has(url.toLowerCase())); if (!urls.length) { notice('Новых URL в списке нет'); return; } const tasks = urls.map(url => ({ id:crypto.randomUUID(), title:taskTitleFromUrl(url), url, target:Number(data.get('target')), done:0, userId:data.get('userId') })); project.tasks.unshift(...tasks); $('#batchTaskDialog').close(); save(); notice(`Добавлено URL: ${tasks.length}`); };
     $('#userForm').onsubmit = event => { event.preventDefault(); const data = new FormData(event.target); state.users.push({ id:crypto.randomUUID(), name:data.get('name').trim(), role:data.get('role').trim(), color:data.get('color') }); $('#userDialog').close(); save(); notice('Пользователь добавлен'); };
     $('#exportButton').onclick = () => { const file = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'}), link = document.createElement('a'); link.href = URL.createObjectURL(file); link.download = `linkflow-${new Date().toISOString().slice(0,10)}.json`; link.click(); URL.revokeObjectURL(link.href); notice('Данные выгружены в JSON-файл'); };
     $('#importButton').onclick = () => $('#importFile').click();
